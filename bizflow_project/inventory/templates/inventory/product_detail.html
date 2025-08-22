@@ -1,0 +1,116 @@
+{% extends 'inventory/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ product.name }} - Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Product Details</h1>
+    <div>
+        <a href="{% url 'edit_product' product.pk %}" class="btn btn-warning btn-sm me-2">
+            <i class="fas fa-edit me-1"></i> Edit
+        </a>
+        <a href="{% url 'delete_product' product.pk %}" class="btn btn-danger btn-sm me-2">
+            <i class="fas fa-trash me-1"></i> Delete
+        </a>
+        <a href="{% url 'add_stock_transaction' %}?product={{ product.id }}" class="btn btn-primary btn-sm me-2">
+            <i class="fas fa-exchange-alt me-1"></i> Update Stock
+        </a>
+        <a href="{% url 'product_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Back to Products
+        </a>
+    </div>
+</div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-1"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Product Info -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr><th>Name:</th><td>{{ product.name }}</td></tr>
+                        <tr><th>SKU:</th><td><code>{{ product.sku }}</code></td></tr>
+                        <tr><th>Category:</th><td>{{ product.category.name|default:"Not set" }}</td></tr>
+                        <tr><th>Supplier:</th><td>{{ product.supplier.name|default:"Not set" }}</td></tr>
+                        <tr><th>Description:</th><td>{{ product.description|default:"No description" }}</td></tr>
+                        <tr><th>Location:</th><td>{{ product.location|default:"Not set" }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Inventory & Pricing</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr><th>Current Stock:</th><td class="text-end"><span class="badge {% if product.current_stock <= product.low_stock_threshold %}bg-warning{% else %}bg-success{% endif %}">{{ product.current_stock }}</span></td></tr>
+                        <tr><th>Low Stock Level:</th><td class="text-end">{{ product.low_stock_threshold }}</td></tr>
+                        <tr><th>Status:</th><td class="text-end">{% if product.current_stock <= product.low_stock_threshold %}<span class="text-warning">Low Stock</span>{% else %}<span class="text-success">Good</span>{% endif %}</td></tr>
+                        <tr><th>Cost Price:</th><td class="text-end">रु {{ product.cost_price|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Selling Price:</th><td class="text-end">रु {{ product.unit_price|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Date Added:</th><td class="text-end">{{ product.date_added|date:"M d, Y" }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Recent Transactions</h5>
+        </div>
+        <div class="card-body">
+            {% if transactions %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>User</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.timestamp|date:"M d, H:i" }}</td>
+                            <td><span class="badge {% if transaction.transaction_type == 'IN' %}bg-success{% elif transaction.transaction_type == 'OUT' %}bg-danger{% else %}bg-info{% endif %}">{{ transaction.get_transaction_type_display }}</span></td>
+                            <td>{{ transaction.quantity }}</td>
+                            <td>{{ transaction.user.username|default:"System" }}</td>
+                            <td>{{ transaction.note|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                <p class="text-muted">No transactions yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'inventory/base.html' %}
+{% load humanize %}
+
+{% block title %}Suppliers{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Supplier Management</h1>
+        <a href="{% url 'add_supplier' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus me-1"></i> Add Supplier
+        </a>
+    </div>
+
+    <!-- Suppliers Grid -->
+    <div class="row">
+        {% for supplier in suppliers %}
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                {{ supplier.name }}
+                            </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                {{ supplier.contact_person|default:"No contact" }}
+                            </div>
+                            <div class="text-muted small mt-1">
+                                {% if supplier.phone %}<i class="fas fa-phone me-1"></i>{{ supplier.phone }}{% endif %}
+                                {% if supplier.email %}<br><i class="fas fa-envelope me-1"></i>{{ supplier.email }}{% endif %}
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge bg-info text-white">Products: {{ supplier.product_count }}</span>
+                                {% if supplier.total_inventory_value %}
+                                <span class="badge bg-success text-white">Value: रु {{ supplier.total_inventory_value|floatformat:0|intcomma }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-truck fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{% url 'supplier_detail' supplier.pk %}" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'edit_supplier' supplier.pk %}" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'delete_supplier' supplier.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Suppliers Found</h5>
+                <p class="text-muted">Get started by adding your first supplier.</p>
+                <a href="{% url 'add_supplier' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add First Supplier
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

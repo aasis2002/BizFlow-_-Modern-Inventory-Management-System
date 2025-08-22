@@ -1,0 +1,317 @@
+{% extends 'inventory/base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Inventory Dashboard</h1>
+        <div>
+            <span class="badge bg-primary me-2">
+                <i class="fas fa-user me-1"></i>{{ user.userprofile.get_role_display }}
+            </span>
+            <a href="{% url 'reports_dashboard' %}" class="btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-chart-bar me-1"></i> View Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Row - Statistics -->
+    <div class="row">
+        <!-- Total Products Card -->
+        <div class="col-xl-2 col-md-4 col-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 stat-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Products</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_products }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Value Card -->
+        <div class="col-xl-2 col-md-4 col-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 stat-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Inventory Value</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">रु {{ total_inventory_value|floatformat:0|intcomma }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Card -->
+        <div class="col-xl-2 col-md-4 col-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2 stat-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Low Stock Items</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ low_stock_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customers Card -->
+        <div class="col-xl-2 col-md-4 col-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2 stat-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Customers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_customers }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suppliers Card -->
+        <div class="col-xl-2 col-md-4 col-6 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2 stat-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Suppliers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_suppliers }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-truck fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Card -->
+        <div class="col-xl-2 col-md-4 col-6 mb-4">
+            <div class="card border-left-dark shadow h-100 py-2 stat-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">Monthly Transactions</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ monthly_data.4.transactions }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row - Charts -->
+    <div class="row">
+        <!-- Stock Status Chart -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Inventory Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="stockStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Transactions Chart -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Monthly Transactions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="monthlyTransactionsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row - Recent Activity -->
+    <div class="row">
+        <!-- Low Stock Alerts -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Low Stock Alerts</h6>
+                    <a href="{% url 'product_list' %}?low_stock=true" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_products %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Threshold</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in low_stock_products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td><span class="badge bg-warning">{{ product.current_stock }}</span></td>
+                                    <td>{{ product.low_stock_threshold }}</td>
+                                    <td>
+                                        <a href="{% url 'add_stock_transaction' %}?product={{ product.id }}" class="btn btn-sm btn-primary">
+                                            Restock
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <p class="text-muted">No low stock items. Good job!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="list-group list-group-flush">
+                        {% for transaction in recent_transactions %}
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ transaction.product.name }}</h6>
+                                <small>{{ transaction.timestamp|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">
+                                <span class="badge 
+                                    {% if transaction.transaction_type == 'IN' %}bg-success
+                                    {% elif transaction.transaction_type == 'OUT' %}bg-danger
+                                    {% else %}bg-info{% endif %}">
+                                    {{ transaction.get_transaction_type_display }}
+                                </span>
+                                Quantity: {{ transaction.quantity }}
+                            </p>
+                            <small class="text-muted">By: {{ transaction.user.username }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No recent activity</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Stock Status Chart
+const stockStatusCtx = document.getElementById('stockStatusChart').getContext('2d');
+const stockStatusChart = new Chart(stockStatusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Healthy Stock', 'Low Stock', 'Out of Stock'],
+        datasets: [{
+            data: [{{ stock_status.healthy }}, {{ stock_status.low }}, {{ stock_status.out_of_stock }}],
+            backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b'],
+            hoverBackgroundColor: ['#17a673', '#dda20a', '#be2617'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        cutout: '70%'
+    }
+});
+
+// Monthly Transactions Chart
+const monthlyCtx = document.getElementById('monthlyTransactionsChart').getContext('2d');
+const monthlyChart = new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ monthly_data|safe }}.map(item => item.month),
+        datasets: [{
+            label: 'Transactions',
+            data: {{ monthly_data|safe }}.map(item => item.transactions),
+            backgroundColor: '#4e73df',
+            hoverBackgroundColor: '#2e59d9',
+            borderColor: '#4e73df',
+            borderRadius: 5,
+            maxBarThickness: 25,
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

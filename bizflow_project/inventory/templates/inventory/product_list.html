@@ -1,0 +1,125 @@
+{% extends 'inventory/base.html' %}
+{% load humanize %}
+
+{% block title %}Product List{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h2 mb-4">Product Management</h1>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'add_stock_transaction' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-exchange-alt me-1"></i> Update Stock
+            </a>
+            <a href="{% url 'add_product' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Add New Product
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="q" placeholder="Search products..." value="{{ current_query }}">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="category">
+                        <option value="all">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if current_category == category.id|stringformat:"i" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="low_stock">
+                        <option value="">All Items</option>
+                        <option value="true" {% if current_low_stock %}selected{% endif %}>Low Stock Only</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card shadow">
+        <div class="card-body">
+            {% if products %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>SKU</th>
+                            <th>Category</th>
+                            <th class="text-center">Stock</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                <strong>{{ product.name }}</strong>
+                                {% if product.description %}
+                                <br><small class="text-muted">{{ product.description|truncatewords:5 }}</small>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ product.sku }}</code></td>
+                            <td>{{ product.category.name|default:"-" }}</td>
+                            <td class="text-center">
+                                <span class="badge {% if product.current_stock <= product.low_stock_threshold %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ product.current_stock }}
+                                </span>
+                            </td>
+                            <td class="text-end">रु {{ product.unit_price|floatformat:2|intcomma }}</td>
+                            <td class="text-center">
+                                <span class="badge {% if product.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {% if product.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'product_detail' product.id %}" class="btn btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'edit_product' product.id %}" class="btn btn-warning" title="Edit Product">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'delete_product' product.id %}" class="btn btn-danger" title="Delete Product">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    <a href="{% url 'add_stock_transaction' %}?product={{ product.id }}" class="btn btn-primary" title="Update Stock">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Products Found</h5>
+                <p class="text-muted">Try changing your search criteria or add new products.</p>
+                <a href="{% url 'add_product' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add First Product
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

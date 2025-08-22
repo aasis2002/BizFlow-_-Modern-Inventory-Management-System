@@ -1,0 +1,99 @@
+{% extends 'inventory/base.html' %}
+{% load humanize %}
+
+{% block title %}Customers{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Customer Management</h1>
+        <a href="{% url 'add_customer' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus me-1"></i> Add Customer
+        </a>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">All Customers</h6>
+        </div>
+        <div class="card-body">
+            {% if customers %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Type</th>
+                            <th>Contact Info</th>
+                            <th>Credit Limit</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>
+                                <strong>{{ customer.name }}</strong>
+                                {% if customer.company_name %}
+                                <br><small class="text-muted">{{ customer.company_name }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if customer.customer_type == 'RETAIL' %}bg-info
+                                    {% elif customer.customer_type == 'WHOLESALE' %}bg-primary
+                                    {% else %}bg-success{% endif %}">
+                                    {{ customer.get_customer_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if customer.phone %}{{ customer.phone }}<br>{% endif %}
+                                {% if customer.email %}<small>{{ customer.email }}</small>{% endif %}
+                            </td>
+                            <td class="text-end">रु {{ customer.credit_limit|floatformat:2|intcomma }}</td>
+                            <td class="text-end">
+                                <span class="{% if customer.current_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    रु {{ customer.current_balance|floatformat:2|intcomma }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if customer.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {% if customer.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'customer_detail' customer.pk %}" class="btn btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'edit_customer' customer.pk %}" class="btn btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'delete_customer' customer.pk %}" class="btn btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Customers Found</h5>
+                <p class="text-muted">Get started by adding your first customer.</p>
+                <a href="{% url 'add_customer' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add First Customer
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

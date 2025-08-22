@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Full Inventory Report - BizFlow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .summary-card { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Full Inventory Report</h1>
+        <p>Period: {{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}</p>
+        <p>Generated on: {% now "M d, Y H:i" %}</p>
+    </div>
+
+    <div class="section">
+        <h2>Summary</h2>
+        <div class="summary-card">
+            <strong>Total Products:</strong> {{ total_products }}<br>
+            <strong>Inventory Value:</strong> ${{ total_inventory_value|floatformat:2 }}<br>
+            <strong>Low Stock Items:</strong> {{ low_stock_count }}<br>
+            <strong>Out of Stock:</strong> {{ out_of_stock_count }}<br>
+            <strong>Total Suppliers:</strong> {{ total_suppliers }}<br>
+            <strong>Total Customers:</strong> {{ total_customers }}
+        </div>
+    </div>
+
+    <!-- Add more sections for detailed reports -->
+</body>
+</html>

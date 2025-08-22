@@ -1,0 +1,90 @@
+{% extends 'inventory/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ customer.name }} - Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Customer Details</h1>
+    <div>
+        <a href="{% url 'edit_customer' customer.pk %}" class="btn btn-warning btn-sm me-2">
+            <i class="fas fa-edit me-1"></i> Edit
+        </a>
+        <a href="{% url 'delete_customer' customer.pk %}" class="btn btn-danger btn-sm me-2">
+            <i class="fas fa-trash me-1"></i> Delete
+        </a>
+        <a href="{% url 'customer_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Back to Customers
+        </a>
+    </div>
+</div>
+
+    <!-- Customer Information -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Basic Information</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr><th width="40%">Customer Name:</th><td>{{ customer.name }}</td></tr>
+                        <tr><th>Customer Type:</th><td><span class="badge bg-primary">{{ customer.get_customer_type_display }}</span></td></tr>
+                        <tr><th>Company Name:</th><td>{{ customer.company_name|default:"Not specified" }}</td></tr>
+                        <tr><th>Contact Person:</th><td>{{ customer.contact_person|default:"Not specified" }}</td></tr>
+                        <tr><th>Tax Number:</th><td>{{ customer.tax_number|default:"Not specified" }}</td></tr>
+                        <tr><th>Status:</th><td><span class="badge {% if customer.is_active %}bg-success{% else %}bg-secondary{% endif %}">{% if customer.is_active %}Active{% else %}Inactive{% endif %}</span></td></tr>
+                        <tr><th>Date Joined:</th><td>{{ customer.date_joined|date:"M d, Y" }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Contact & Financial Information</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr><th width="40%">Phone:</th><td>{{ customer.phone }}</td></tr>
+                        <tr><th>Email:</th><td>{{ customer.email|default:"Not specified" }}</td></tr>
+                        <tr><th>Address:</th><td>{{ customer.address|default:"Not specified" }}</td></tr>
+                        <tr class="border-top"><th>Credit Limit:</th><td class="text-end">रु {{ customer.credit_limit|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Current Balance:</th><td class="text-end {% if customer.current_balance > 0 %}text-danger{% else %}text-success{% endif %}">रु {{ customer.current_balance|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Available Credit:</th><td class="text-end">रु {{ customer.credit_limit|add:customer.current_balance|floatformat:2|intcomma }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Notes -->
+    {% if customer.notes %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Notes</h6>
+        </div>
+        <div class="card-body">
+            <p class="mb-0">{{ customer.notes }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Transaction History (Placeholder for future implementation) -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Transaction History</h6>
+        </div>
+        <div class="card-body">
+            <div class="text-center py-4">
+                <i class="fas fa-receipt fa-2x text-muted mb-2"></i>
+                <p class="text-muted">Transaction history will appear here once sales are recorded.</p>
+                <a href="#" class="btn btn-sm btn-outline-primary">Record Sale</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

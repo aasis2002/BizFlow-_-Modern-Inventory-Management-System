@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">User Management</h1>
+        <a href="{% url 'add_user' %}" class="btn btn-primary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-plus"></i>
+            </span>
+            <span class="text">Add New User</span>
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">All Users</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="userTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if user.profile.profile_picture %}
+                                    <img src="{{ user.profile.profile_picture.url }}" 
+                                         class="rounded-circle me-2" width="32" height="32">
+                                    {% else %}
+                                    <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" 
+                                         style="width: 32px; height: 32px;">
+                                        <span class="text-white">{{ user.first_name|first }}{{ user.last_name|first }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">{{ user.get_full_name }}</div>
+                                        <small class="text-muted">@{{ user.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-{% if user.profile.role == 'admin' %}danger
+                                                      {% elif user.profile.role == 'manager' %}warning
+                                                      {% elif user.profile.role == 'staff' %}primary
+                                                      {% else %}secondary{% endif %}">
+                                    {{ user.profile.get_role_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %}">
+                                    {{ user.is_active|yesno:"Active,Inactive" }}
+                                </span>
+                            </td>
+                            <td>{{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    {% if user != request.user %}
+                                    <button class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#userTable').DataTable({
+        responsive: true,
+        ordering: true,
+        searching: true,
+        pageLength: 10
+    });
+});
+</script>
+{% endblock %}
